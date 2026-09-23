@@ -43,8 +43,9 @@ public final class Main {
             System.out.print(report);
 
             Path output = Path.of(outputPath);
-            if (output.getParent() != null) {
-                Files.createDirectories(output.getParent());
+            Path outputParent = output.getParent();
+            if (outputParent != null) {
+                Files.createDirectories(outputParent);
             }
             Files.writeString(output, report, StandardCharsets.UTF_8);
         } catch (IOException exception) {
