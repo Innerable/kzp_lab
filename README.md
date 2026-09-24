@@ -102,7 +102,11 @@ java -jar target/lab01-1.0.0.jar --input data/input.csv --output out/report.txt
 ```bash
 java -jar target/lab01-1.0.0.jar --help
 ```
+Довідка про версію лабораторної:
 
+```bash
+java -jar target/lab01-1.0.0.jar --version
+```
 ### Повна перезбірка з нуля
 
 ```bash
