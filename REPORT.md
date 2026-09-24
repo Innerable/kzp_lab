@@ -27,9 +27,6 @@
   Maven Wrapper;
 - організовано роботу через GitHub Issues і Pull Request.
 
-<!-- ЗАПОВНІТЬ: якщо додали GitHub Actions — допишіть сюди пункт про CI
-та публікацію артефакта, і оновіть висновок нижче на "рівень 3". -->
-
 ## 3. Постановка задачі
 
 Формат одного запису у `data/input.csv` (роздільник `;`, кодування
@@ -57,27 +54,70 @@ name:String; group:String; course:int; average:double; scholarship:boolean
 ## 4. Структура програми
 
 ```
+[vyuna@vyuna lab1]$ tree
 .
+├── ai
+│   ├── developer.md
+│   ├── devops.md
+│   ├── documenter.md
+│   ├── manager.md
+│   ├── reviewer.md
+│   └── validator.md
+├── data
+│   └── input.csv
+├── mvnw
+├── mvnw.cmd
+├── out
+│   └── report.txt
+├── pom.xml
 ├── README.md
 ├── REPORT.md
-├── .gitignore
-├── .gitattributes
-├── .editorconfig
-├── pom.xml
-├── mvnw / mvnw.cmd
-├── .mvn/wrapper/
-├── ai/
-│   ├── manager.md
-│   └── devops.md
-├── data/
-│   └── input.csv
-├── out/
-│   └── report.txt        (створюється після запуску)
-└── src/
-    ├── main/java/ua/lpnu/kzp/
-    │   └── Main.java
-    └── test/java/ua/lpnu/kzp/
-        └── MainTest.java
+├── src
+│   ├── main
+│   │   └── java
+│   │       └── ua
+│   │           └── lpnu
+│   │               └── kzp
+│   │                   └── Main.java
+│   └── test
+│       └── java
+│           └── ua
+│               └── lpnu
+│                   └── kzp
+│                       └── MainTest.java
+└── target
+    ├── classes
+    │   └── ua
+    │       └── lpnu
+    │           └── kzp
+    │               └── Main.class
+    ├── generated-sources
+    │   └── annotations
+    ├── generated-test-sources
+    │   └── test-annotations
+    ├── lab01-1.0.0.jar
+    ├── maven-archiver
+    │   └── pom.properties
+    ├── maven-status
+    │   └── maven-compiler-plugin
+    │       ├── compile
+    │       │   └── default-compile
+    │       │       ├── createdFiles.lst
+    │       │       └── inputFiles.lst
+    │       └── testCompile
+    │           └── default-testCompile
+    │               ├── createdFiles.lst
+    │               └── inputFiles.lst
+    ├── original-lab01-1.0.0.jar
+    ├── spotbugsXml.xml
+    ├── surefire-reports
+    │   ├── TEST-ua.lpnu.kzp.MainTest.xml
+    │   └── ua.lpnu.kzp.MainTest.txt
+    └── test-classes
+        └── ua
+            └── lpnu
+                └── kzp
+                    └── MainTest.class
 ```
 
 Потік даних: `Main.main` читає аргументи командного рядка (`--help`,
@@ -107,18 +147,12 @@ name:String; group:String; course:int; average:double; scholarship:boolean
   `package`, формує виконуваний jar із залежностями
   (`lab01-1.0.0-shaded.jar`) з головним класом `ua.lpnu.kzp.Main`.
 
-<!-- ЗАПОВНІТЬ (рівень 3): якщо є .github/workflows/ci.yml — опишіть тут
-матрицю ОС, кешування залежностей і публікацію jar як артефакта. -->
-
 ## 6. GitHub Issues і Pull Request
 
 | № Issue | Мітка | Зміна | Коміт / PR |
 |---|---|---|---|
 | #4 | bug | Виправлено `NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE`: результат `getParent()` тепер зберігається в змінну перед перевіркою на `null` | коміт `ec07fde` на гілці `feature/tests`, PR "Fix SpotBugs null pointer warning in Main.main" (Closes #4) |
 
-<!-- ЗАПОВНІТЬ: додайте рядки для решти Issues (infra: pom.xml/Wrapper,
-infra: GitHub Actions, feature: читання й перевірка записів, feature:
-звіт, docs: документація) з посиланнями на відповідні коміти/PR. -->
 
 ## 7. Приклади роботи
 
@@ -167,22 +201,12 @@ java -jar target/lab01-1.0.0-shaded.jar --input data/input.csv --output out/repo
 # target/lab01-1.0.0-shaded.jar сформовано
 ```
 
-<!-- ЗАПОВНІТЬ: поточний MainTest — лише smoke-тест (assertEquals(4, 2+2)).
-Для рівня 2/3 додайте реальні тести бізнес-логіки: коректний рядок,
-порожній рядок, неправильна кількість полів, нечислове поле, від'ємне
-значення, файл без коректних записів, обчислення середнього для кількох
-записів, українські символи. Опишіть їх тут і додайте посилання на
-GitHub Actions, якщо CI налаштовано. -->
-
 ## 9. Документація
 
 Javadoc додано до:
 - класу `Main` (опис призначення класу);
 - методу `main` (опис аргументів командного рядка);
 - методу `buildReport` (опис вхідних даних і результату).
-
-<!-- ЗАПОВНІТЬ: якщо додали окремі класи (наприклад FileReport), вкажіть
-тут javadoc і на них. -->
 
 ## 10. Академічна доброчесність
 
@@ -195,6 +219,7 @@ Arch Linux (без IDE).
   мітками infra/feature/bug/docs та формулювання критеріїв готовності.
 - **DevOps** — консультація щодо структури `pom.xml`, Maven Wrapper,
   фаз `test`/`verify`/`package` та інтерпретації логів SpotBugs.
+- Та решту як Developer, documenter etc.
 
 **Прийняті рекомендації.** Асистент допоміг:
 - згенерувати початкову структуру `pom.xml`, `.gitignore`,
@@ -209,13 +234,6 @@ Arch Linux (без IDE).
 **Виправлені помилки.** Виправлено помилковий подвійний виклик
 `Path.getParent()`, на який вказав статичний аналізатор SpotBugs
 (Issue #4).
-
-**Відповідальність автора.** Я самостійно написав початкову версію
-`Main.java`, перевірив і можу пояснити кожен рядок коду, включно з
-логікою розбору `String.split(";", -1)`, обробкою
-`NumberFormatException` та причиною виправлення null pointer
-попередження. Я перевірив коректність усіх наведених команд і виводів
-локально перед внесенням у звіт.
 
 ## 11. Відповіді на контрольні питання
 
