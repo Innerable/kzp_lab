@@ -8,7 +8,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-/** Консольна програма для обробки реєстру студентів (варіант 6). */
 public final class Main {
 
     private Main() {
@@ -24,6 +23,15 @@ public final class Main {
         String outputPath = "out/report.txt";
 
         for (int i = 0; i < args.length; i++) {
+            if ("--version".equals(args[i])) {
+                System.out.printf(Locale.ROOT, "lab01 версія %s%n", VERSION);
+                return;
+            }
+            if ("--help".equals(args[i])) {
+                System.out.printf(Locale.ROOT,
+                        "Використання: java -jar lab01.jar [--help] [--version] [--input <файл>] [--output <файл>]%n");
+                return;
+            }
             if ("--help".equals(args[i])) {
                 System.out.printf(Locale.ROOT,
                         "Використання: java -jar lab01.jar [--help] [--input <файл>] [--output <файл>]%n");
