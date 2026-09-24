@@ -85,39 +85,7 @@ name:String; group:String; course:int; average:double; scholarship:boolean
 │               └── lpnu
 │                   └── kzp
 │                       └── MainTest.java
-└── target
-    ├── classes
-    │   └── ua
-    │       └── lpnu
-    │           └── kzp
-    │               └── Main.class
-    ├── generated-sources
-    │   └── annotations
-    ├── generated-test-sources
-    │   └── test-annotations
-    ├── lab01-1.0.0.jar
-    ├── maven-archiver
-    │   └── pom.properties
-    ├── maven-status
-    │   └── maven-compiler-plugin
-    │       ├── compile
-    │       │   └── default-compile
-    │       │       ├── createdFiles.lst
-    │       │       └── inputFiles.lst
-    │       └── testCompile
-    │           └── default-testCompile
-    │               ├── createdFiles.lst
-    │               └── inputFiles.lst
-    ├── original-lab01-1.0.0.jar
-    ├── spotbugsXml.xml
-    ├── surefire-reports
-    │   ├── TEST-ua.lpnu.kzp.MainTest.xml
-    │   └── ua.lpnu.kzp.MainTest.txt
-    └── test-classes
-        └── ua
-            └── lpnu
-                └── kzp
-                    └── MainTest.class
+└── target -- створений після першої компіляції
 ```
 
 Потік даних: `Main.main` читає аргументи командного рядка (`--help`,
