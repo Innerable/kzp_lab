@@ -27,10 +27,13 @@ public final class Student {
         if (name == null || name.isBlank() || group == null || group.isBlank()) {
             throw new IllegalArgumentException("порожнє ім'я або назва групи");
         }
+        if (Double.isNaN(average) || Double.isInfinite(average)) {
+            throw new IllegalArgumentException("середній бал має бути скінченним числом");
+        }
         if (course < 0 || average < 0) {
             throw new IllegalArgumentException("від'ємне числове значення");
         }
-        this.name = name.trim();
+        this.name = name.trim(); //Для виведення з Upper-case
         this.group = group.trim();
         this.course = course;
         this.average = average;

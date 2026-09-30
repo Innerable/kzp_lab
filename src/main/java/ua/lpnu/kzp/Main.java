@@ -9,13 +9,13 @@ import java.util.List;
 import java.util.Locale;
 
 public final class Main {
-    private static final String VERSION = "1.0.1";
+    private static final String VERSION = "1.6.7";
 
     private Main() {
     }
 
     /** Незмінне підсумкове значення для звіту. */
-    private record Summary(int validCount, double meanAverage, double maxAverage, int scholarshipCount) {
+    record Summary(int validCount, double meanAverage, double maxAverage, int scholarshipCount) {
     }
 
     /**
@@ -93,7 +93,7 @@ public final class Main {
         return sb.toString();
     }
 
-    private static Summary summarize(List<Student> students) {
+    static Summary summarize(List<Student> students) {
         if (students.isEmpty()) {
             return new Summary(0, 0.0, 0.0, 0);
         }
