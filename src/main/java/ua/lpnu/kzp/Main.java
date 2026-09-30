@@ -9,8 +9,13 @@ import java.util.List;
 import java.util.Locale;
 
 public final class Main {
-    private static final String VERSION = "1.6.7";
+    private static final String VERSION = "1.0.1";
+
     private Main() {
+    }
+
+    /** Незмінне підсумкове значення для звіту. */
+    private record Summary(int validCount, double meanAverage, double maxAverage, int scholarshipCount) {
     }
 
     /**
@@ -30,11 +35,6 @@ public final class Main {
             if ("--help".equals(args[i])) {
                 System.out.printf(Locale.ROOT,
                         "Використання: java -jar lab01.jar [--help] [--version] [--input <файл>] [--output <файл>]%n");
-                return;
-            }
-            if ("--help".equals(args[i])) {
-                System.out.printf(Locale.ROOT,
-                        "Використання: java -jar lab01.jar [--help] [--input <файл>] [--output <файл>]%n");
                 return;
             }
             if ("--input".equals(args[i]) && i + 1 < args.length) {
@@ -62,77 +62,51 @@ public final class Main {
     }
 
     /**
-     * Обробляє список рядків реєстру та формує текст звіту.
+     * Перетворює рядки на об'єкти Student і формує текст звіту.
      *
      * @param lines рядки вхідного файлу
      * @return готовий текст звіту
      */
-    private static String buildReport(List<String> lines) {
+    static String buildReport(List<String> lines) {
         List<String> errors = new ArrayList<>();
-        int validCount = 0;
-        double totalAverage = 0.0;
-        double maxAverage = Double.NEGATIVE_INFINITY;
-        int scholarshipCount = 0;
+        List<Student> students = new ArrayList<>();
 
         for (int index = 0; index < lines.size(); index++) {
-            String line = lines.get(index);
-            int lineNumber = index + 1;
-
-            if (line.isBlank()) {
-                errors.add("Рядок %d: порожній рядок".formatted(lineNumber));
-                continue;
-            }
-
-            String[] fields = line.split(";", -1);
-            if (fields.length != 5) {
-                errors.add("Рядок %d: очікується 5 полів, отримано %d".formatted(lineNumber, fields.length));
-                continue;
-            }
-
-            String name = fields[0].trim();
-            String group = fields[1].trim();
-
-            if (name.isBlank() || group.isBlank()) {
-                errors.add("Рядок %d: порожнє ім'я або назва групи".formatted(lineNumber));
-                continue;
-            }
-
             try {
-                int course = Integer.parseInt(fields[2].trim());
-                double average = Double.parseDouble(fields[3].trim());
-                boolean scholarship = Boolean.parseBoolean(fields[4].trim());
-
-                if (course < 0 || average < 0) {
-                    errors.add("Рядок %d: від'ємне числове значення".formatted(lineNumber));
-                    continue;
-                }
-
-                validCount++;
-                totalAverage += average;
-                maxAverage = Math.max(maxAverage, average);
-                if (scholarship) {
-                    scholarshipCount++;
-                }
-            } catch (NumberFormatException exception) {
-                errors.add("Рядок %d: числове поле має помилковий формат".formatted(lineNumber));
+                students.add(Student.fromCsv(lines.get(index)));
+            } catch (IllegalArgumentException exception) {
+                errors.add("Рядок %d: %s".formatted(index + 1, exception.getMessage()));
             }
         }
 
-        double meanAverage = validCount == 0 ? 0.0 : totalAverage / validCount;
-        if (validCount == 0) {
-            maxAverage = 0.0;
-        }
+        Summary summary = summarize(students);
 
         StringBuilder sb = new StringBuilder();
-        sb.append(String.format(Locale.ROOT, "Коректних записів: %d%n", validCount));
-        sb.append(String.format(Locale.ROOT, "Середній бал: %.2f%n", meanAverage));
-        sb.append(String.format(Locale.ROOT, "Найбільший бал: %.2f%n", maxAverage));
-        sb.append(String.format(Locale.ROOT, "Кількість стипендіатів: %d%n", scholarshipCount));
+        sb.append(String.format(Locale.ROOT, "Коректних записів: %d%n", summary.validCount()));
+        sb.append(String.format(Locale.ROOT, "Середній бал: %.2f%n", summary.meanAverage()));
+        sb.append(String.format(Locale.ROOT, "Найбільший бал: %.2f%n", summary.maxAverage()));
+        sb.append(String.format(Locale.ROOT, "Кількість стипендіатів: %d%n", summary.scholarshipCount()));
         sb.append(String.format(Locale.ROOT, "Помилок: %d%n", errors.size()));
         for (String error : errors) {
             sb.append(error).append(System.lineSeparator());
         }
-
         return sb.toString();
+    }
+
+    private static Summary summarize(List<Student> students) {
+        if (students.isEmpty()) {
+            return new Summary(0, 0.0, 0.0, 0);
+        }
+        double total = 0.0;
+        double max = Double.NEGATIVE_INFINITY;
+        int scholarshipCount = 0;
+        for (Student student : students) {
+            total += student.getAverage();
+            max = Math.max(max, student.getAverage());
+            if (student.hasScholarship()) {
+                scholarshipCount++;
+            }
+        }
+        return new Summary(students.size(), total / students.size(), max, scholarshipCount);
     }
 }
