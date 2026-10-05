@@ -1,29 +1,46 @@
 package ua.lpnu.kzp;
 
 import java.util.Locale;
+import java.util.Objects;
 
 /**
- * Сутність предметної області: запис про студента з реєстру.
- * Стан об'єкта прихований, інваріанти перевіряються в конструкторі.
+ * Базовий тип реєстру: запис про студента.
+ * поведінка (рейтинг) перевизначається в підтипах.
  */
-public final class Student {
+public class Student {
     private final String name;
     private final String group;
     private final int course;
     private final double average;
     private final boolean scholarship;
+    private final StudyStatus status;
 
-    /**
-     * Створює студента та перевіряє коректність значень.
-     *
-     * @param name        ім'я
-     * @param group       назва групи
-     * @param course      курс (не від'ємний)
-     * @param average     середній бал (не від'ємний)
-     * @param scholarship чи отримує стипендію
-     * @throws IllegalArgumentException якщо значення хибні
-     */
     public Student(String name, String group, int course, double average, boolean scholarship) {
+        this(validate(name, group, course, average, StudyStatus.forCourse(course)),
+                name, group, course, average, scholarship, StudyStatus.forCourse(course));
+    }
+
+
+    protected Student(String name, String group, int course, double average,
+                      boolean scholarship, StudyStatus status) {
+        this(validate(name, group, course, average, status),
+                name, group, course, average, scholarship, status);
+    }
+
+    /* Присвоює вже перевірений стан. */
+    private Student(boolean validated, String name, String group, int course,
+                    double average, boolean scholarship, StudyStatus status) {
+        this.name = name.trim(); //Для виведення з Upper-case
+        this.group = group.trim();
+        this.course = course;
+        this.average = average;
+        this.scholarship = scholarship;
+        this.status = status;
+    }
+
+    /* Перевіряє спільні інваріанти; повертає true, якщо все коректно. */
+    private static boolean validate(String name, String group, int course,
+                                    double average, StudyStatus status) {
         if (name == null || name.isBlank() || group == null || group.isBlank()) {
             throw new IllegalArgumentException("порожнє ім'я або назва групи");
         }
@@ -33,21 +50,11 @@ public final class Student {
         if (course < 0 || average < 0) {
             throw new IllegalArgumentException("від'ємне числове значення");
         }
-        this.name = name.trim(); //Для виведення з Upper-case
-        this.group = group.trim();
-        this.course = course;
-        this.average = average;
-        this.scholarship = scholarship;
+        Objects.requireNonNull(status, "Рівень не може бути null");
+        return true;
     }
 
-    /**
-     * Фабричний метод: створює студента з CSV-рядка формату
-     * {@code ім'я;група;курс;середній бал;стипендія}.
-     *
-     * @param line рядок CSV
-     * @return об'єкт студента
-     * @throws IllegalArgumentException якщо рядок має хибний формат або значення
-     */
+
     public static Student fromCsv(String line) {
         if (line == null || line.isBlank()) {
             throw new IllegalArgumentException("порожній рядок");
@@ -69,7 +76,15 @@ public final class Student {
         }
         boolean scholarship = Boolean.parseBoolean(fields[4].trim());
 
-        return new Student(fields[0], fields[1], course, average, scholarship);
+        if (StudyStatus.forCourse(course) == StudyStatus.MASTER) {
+            return new Master(fields[0], fields[1], course, average, scholarship);
+        }
+        return new Bachelor(fields[0], fields[1], course, average, scholarship);
+    }
+
+
+    public double rating() {
+        return average;
     }
 
     public String getName() {
@@ -90,6 +105,10 @@ public final class Student {
 
     public boolean hasScholarship() {
         return scholarship;
+    }
+
+    public StudyStatus getStatus() {
+        return status;
     }
 
     @Override
