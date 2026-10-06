@@ -3,10 +3,7 @@ package ua.lpnu.kzp;
 import java.util.Locale;
 import java.util.Objects;
 
-/**
- * Базовий тип реєстру: запис про студента.
- * поведінка (рейтинг) перевизначається в підтипах.
- */
+
 public class Student {
     private final String name;
     private final String group;
@@ -20,14 +17,12 @@ public class Student {
                 name, group, course, average, scholarship, StudyStatus.forCourse(course));
     }
 
-
     protected Student(String name, String group, int course, double average,
                       boolean scholarship, StudyStatus status) {
         this(validate(name, group, course, average, status),
                 name, group, course, average, scholarship, status);
     }
 
-    /* Присвоює вже перевірений стан. */
     private Student(boolean validated, String name, String group, int course,
                     double average, boolean scholarship, StudyStatus status) {
         this.name = name.trim(); //Для виведення з Upper-case
@@ -38,7 +33,6 @@ public class Student {
         this.status = status;
     }
 
-    /* Перевіряє спільні інваріанти; повертає true, якщо все коректно. */
     private static boolean validate(String name, String group, int course,
                                     double average, StudyStatus status) {
         if (name == null || name.isBlank() || group == null || group.isBlank()) {
@@ -53,7 +47,6 @@ public class Student {
         Objects.requireNonNull(status, "Рівень не може бути null");
         return true;
     }
-
 
     public static Student fromCsv(String line) {
         if (line == null || line.isBlank()) {
@@ -82,7 +75,6 @@ public class Student {
         return new Bachelor(fields[0], fields[1], course, average, scholarship);
     }
 
-
     public double rating() {
         return average;
     }
@@ -109,6 +101,23 @@ public class Student {
 
     public StudyStatus getStatus() {
         return status;
+    }
+
+    @Override
+    public final boolean equals(Object other) {
+        if (this == other) {
+            return true;
+        }
+        if (other == null || getClass() != other.getClass()) {
+            return false;
+        }
+        Student student = (Student) other;
+        return name.equals(student.name) && group.equals(student.group);
+    }
+
+    @Override
+    public final int hashCode() {
+        return Objects.hash(getClass(), name, group);
     }
 
     @Override
