@@ -9,23 +9,18 @@ import java.util.List;
 import java.util.Locale;
 
 public final class Main {
-    private static final String VERSION = "1.0.3";
+    private static final String VERSION = "1.6.7";
 
     private Main() {
     }
 
-    /** Незмінне підсумкове значення для звіту. */
     record Summary(int validCount, double meanAverage, double maxAverage, int scholarshipCount) {
     }
 
-    /**
-     * Точка входу до програми.
-     *
-     * @param args аргументи командного рядка
-     */
     public static void main(String[] args) {
         String inputPath = "data/input.csv";
         String outputPath = "out/report.txt";
+        boolean showRatings = false;
 
         for (int i = 0; i < args.length; i++) {
             if ("--version".equals(args[i])) {
@@ -34,8 +29,11 @@ public final class Main {
             }
             if ("--help".equals(args[i])) {
                 System.out.printf(Locale.ROOT,
-                        "Використання: java -jar lab01.jar [--help] [--version] [--input <файл>] [--output <файл>]%n");
+                        "Використання: java -jar lab01.jar [--help] [--version] [--input <файл>] [--output <файл>] [--ratings]%n");
                 return;
+            }
+            if ("--ratings".equals(args[i])) {
+                showRatings = true;
             }
             if ("--input".equals(args[i]) && i + 1 < args.length) {
                 inputPath = args[++i];
@@ -47,7 +45,9 @@ public final class Main {
 
         try {
             List<String> lines = Files.readAllLines(Path.of(inputPath), StandardCharsets.UTF_8);
-            String report = buildReport(lines);
+            List<String> errors = new ArrayList<>();
+            List<Student> students = parseStudents(lines, errors);
+            String report = formatReport(students, errors);
             System.out.print(report);
 
             Path output = Path.of(outputPath);
@@ -56,30 +56,22 @@ public final class Main {
                 Files.createDirectories(outputParent);
             }
             Files.writeString(output, report, StandardCharsets.UTF_8);
+
+            if (showRatings) {
+                System.out.print(buildRatings(students));
+            }
         } catch (IOException exception) {
             System.out.printf(Locale.ROOT, "Помилка читання/запису файлу: %s%n", exception.getMessage());
         }
     }
 
-    /**
-     * Перетворює рядки на об'єкти Student і формує текст звіту.
-     *
-     * @param lines рядки вхідного файлу
-     * @return готовий текст звіту
-     */
-       static String buildReport(List<String> lines) {
+
+    static String buildReport(List<String> lines) {
         List<String> errors = new ArrayList<>();
         List<Student> students = parseStudents(lines, errors);
         return formatReport(students, errors);
     }
- 
-    /**
-     * Перетворює рядки на студентів (бакалаврів і магістрів) у спільній колекції.
-     *
-     * @param lines  рядки вхідного файлу
-     * @param errors список, до якого додаються повідомлення про хибні рядки
-     * @return коректні записи
-     */
+
     private static List<Student> parseStudents(List<String> lines, List<String> errors) {
         List<Student> students = new ArrayList<>();
         for (int index = 0; index < lines.size(); index++) {
@@ -91,11 +83,11 @@ public final class Main {
         }
         return students;
     }
- 
+
     /* Формує текст звіту за готовими студентами та помилками. */
     private static String formatReport(List<Student> students, List<String> errors) {
         Summary summary = summarize(students);
- 
+
         StringBuilder sb = new StringBuilder();
         sb.append(String.format(Locale.ROOT, "Коректних записів: %d%n", summary.validCount()));
         sb.append(String.format(Locale.ROOT, "Середній бал: %.2f%n", summary.meanAverage()));
@@ -107,14 +99,7 @@ public final class Main {
         }
         return sb.toString();
     }
- 
-    /**
-     * Формує рейтинги студентів. Метод {@code rating()} викликається поліморфно:
-     * реалізація залежить від фактичного підтипу, перевірок типу тут немає.
-     *
-     * @param students студенти
-     * @return текст із рейтингом кожного студента
-     */
+
     static String buildRatings(List<Student> students) {
         StringBuilder sb = new StringBuilder();
         for (Student student : students) {
@@ -123,7 +108,7 @@ public final class Main {
         }
         return sb.toString();
     }
- 
+
     static Summary summarize(List<Student> students) {
         if (students.isEmpty()) {
             return new Summary(0, 0.0, 0.0, 0);
@@ -141,4 +126,3 @@ public final class Main {
         return new Summary(students.size(), total / students.size(), max, scholarshipCount);
     }
 }
-
