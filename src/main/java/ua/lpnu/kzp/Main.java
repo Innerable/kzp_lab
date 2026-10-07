@@ -1,5 +1,6 @@
 package ua.lpnu.kzp;
-
+import java.util.DoubleSummaryStatistics;
+import java.util.stream.Collectors;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -21,6 +22,7 @@ public final class Main {
         String inputPath = "data/input.csv";
         String outputPath = "out/report.txt";
         boolean showRatings = false;
+        boolean showStream = false;
 
         for (int i = 0; i < args.length; i++) {
             if ("--version".equals(args[i])) {
@@ -29,11 +31,14 @@ public final class Main {
             }
             if ("--help".equals(args[i])) {
                 System.out.printf(Locale.ROOT,
-                        "Використання: java -jar lab01.jar [--help] [--version] [--input <файл>] [--output <файл>] [--ratings]%n");
+                        "Використання: java -jar lab01.jar [--help] [--version] [--input <файл>] [--output <файл>] [--ratings] [--stream]%n");
                 return;
             }
             if ("--ratings".equals(args[i])) {
                 showRatings = true;
+            }
+            if ("--stream".equals(args[i])) {
+                showStream = true;
             }
             if ("--input".equals(args[i]) && i + 1 < args.length) {
                 inputPath = args[++i];
@@ -60,16 +65,20 @@ public final class Main {
             if (showRatings) {
                 System.out.print(buildRatings(students));
             }
+            if (showStream) {
+                System.out.print(buildStreamReport(students));
+            }
         } catch (IOException exception) {
             System.out.printf(Locale.ROOT, "Помилка читання/запису файлу: %s%n", exception.getMessage());
         }
     }
 
 
-    static String buildReport(List<String> lines) {
-        List<String> errors = new ArrayList<>();
-        List<Student> students = parseStudents(lines, errors);
-        return formatReport(students, errors);
+    static String buildRatings(List<Student> students) {
+    return students.stream()
+            .map(student -> String.format(Locale.ROOT, "%s (%s): рейтинг %.2f%n",
+                    student.getName(), student.getStatus().label(), student.rating()))
+            .collect(Collectors.joining());
     }
 
     private static List<Student> parseStudents(List<String> lines, List<String> errors) {
@@ -99,30 +108,37 @@ public final class Main {
         }
         return sb.toString();
     }
-
-    static String buildRatings(List<Student> students) {
-        StringBuilder sb = new StringBuilder();
-        for (Student student : students) {
-            sb.append(String.format(Locale.ROOT, "%s (%s): рейтинг %.2f%n",
-                    student.getName(), student.getStatus().label(), student.rating()));
-        }
-        return sb.toString();
+    static String buildReport(List<String> lines) {
+        List<String> errors = new ArrayList<>();
+        List<Student> students = parseStudents(lines, errors);
+        return formatReport(students, errors);
     }
 
-    static Summary summarize(List<Student> students) {
-        if (students.isEmpty()) {
-            return new Summary(0, 0.0, 0.0, 0);
-        }
-        double total = 0.0;
-        double max = Double.NEGATIVE_INFINITY;
-        int scholarshipCount = 0;
-        for (Student student : students) {
-            total += student.getAverage();
-            max = Math.max(max, student.getAverage());
-            if (student.hasScholarship()) {
-                scholarshipCount++;
-            }
-        }
-        return new Summary(students.size(), total / students.size(), max, scholarshipCount);
+    static String buildStreamReport(List<Student> students) {
+    DoubleSummaryStatistics statistics = StudentReport.averageStatistics(students);
+    String statisticsLine = statistics.getCount() == 0
+            ? "немає даних"
+            : String.format(Locale.ROOT, "мін %.2f, середнє %.2f, макс %.2f",
+                    statistics.getMin(), statistics.getAverage(), statistics.getMax());
+    return String.format(Locale.ROOT,
+            "Бал не нижче %.2f: %s%nКількість за групою: %s%nСтатистика балу: %s%nТоп-%d: %s%n",
+            StudentReport.HIGH_AVERAGE_THRESHOLD,
+            StudentReport.names(StudentReport.highAchievers(students)),
+            StudentReport.countByGroup(students),
+            statisticsLine,
+            StudentReport.TOP_LIMIT,
+            StudentReport.names(StudentReport.topByAverage(students, StudentReport.TOP_LIMIT)));
+    }
+
+   static Summary summarize(List<Student> students) {
+    if (students.isEmpty()) {
+        return new Summary(0, 0.0, 0.0, 0);
+    }
+    DoubleSummaryStatistics statistics = StudentReport.averageStatistics(students);
+    long scholarshipCount = students.stream()
+            .filter(Student::hasScholarship)
+            .count();
+    return new Summary(Math.toIntExact(statistics.getCount()), statistics.getAverage(),
+            statistics.getMax(), Math.toIntExact(scholarshipCount));
     }
 }
