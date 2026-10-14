@@ -23,6 +23,7 @@ public final class Main {
         String outputPath = "out/report.txt";
         boolean showRatings = false;
         boolean showStream = false;
+        String exportPath = null;
 
         for (int i = 0; i < args.length; i++) {
             if ("--version".equals(args[i])) {
@@ -31,7 +32,7 @@ public final class Main {
             }
             if ("--help".equals(args[i])) {
                 System.out.printf(Locale.ROOT,
-                        "Використання: java -jar lab01.jar [--help] [--version] [--input <файл>] [--output <файл>] [--ratings] [--stream]%n");
+                        "Використання: java -jar lab01.jar [--help] [--version] [--input <файл>] [--output <файл>] [--ratings] [--stream] [--export <файл>]%n");
                 return;
             }
             if ("--ratings".equals(args[i])) {
@@ -42,6 +43,9 @@ public final class Main {
             }
             if ("--input".equals(args[i]) && i + 1 < args.length) {
                 inputPath = args[++i];
+            }
+            if ("--export".equals(args[i]) && i + 1 < args.length) {
+                exportPath = args[++i];
             }
             if ("--output".equals(args[i]) && i + 1 < args.length) {
                 outputPath = args[++i];
@@ -68,11 +72,26 @@ public final class Main {
             if (showStream) {
                 System.out.print(buildStreamReport(students));
             }
+            if (exportPath != null) {
+                System.out.print(exportCsv(students, Path.of(exportPath)));
+            }
+        } catch (DataStorageException exception) {
+            System.out.printf(Locale.ROOT, "Помилка експорту: %s%n", exception.getMessage());
         } catch (IOException exception) {
             System.out.printf(Locale.ROOT, "Помилка читання/запису файлу: %s%n", exception.getMessage());
         }
     }
 
+
+    /* Експортує студентів у CSV, читає назад і повідомляє результат round-trip. */
+    static String exportCsv(List<Student> students, Path path) throws DataStorageException {
+        Repository<LearnerRecord> repository = new Repository<>();
+        students.stream().map(LearnerRecord::from).forEach(repository::add);
+        CsvExporter.write(path, LearnerRecord.class, repository.all());
+        List<LearnerRecord> restored = LearnerRecord.readCsv(path);
+        return String.format(Locale.ROOT, "Експорт CSV: %d записів, round-trip %s%n",
+                restored.size(), restored.equals(repository.all()) ? "успішний" : "не збігається");
+    }
 
     static String buildRatings(List<Student> students) {
     return students.stream()

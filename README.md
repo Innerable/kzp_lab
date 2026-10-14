@@ -150,3 +150,17 @@ java -jar target/lab01-1.0.0.jar --version
 
 ## Автор
 Provided by Claude
+
+## Лабораторна № 5: CSV-експорт
+
+Прапорець `--export <файл>` записує студентів у UTF-8 CSV через `Repository<LearnerRecord>`
+та рефлексивний `CsvExporter` (поля з `@CsvColumn`), читає файл назад і друкує результат round-trip.
+
+Заголовок: `середній бал,ПІБ,група,курс`. Значення з комою, лапкою або перенесенням рядка
+беруться в лапки (`"` подвоюється). Помилки — `DataStorageException` із `cause`.
+Деталі та таблиця помилок: `reports/REPORT5.md`.
+
+```bash
+./mvnw verify package
+java -jar target/lab01-1.0.0.jar --export out/learners.csv
+```
