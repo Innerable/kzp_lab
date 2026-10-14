@@ -6,3 +6,5 @@ ref/
 *.class
 .DS_Store
 Thumbs.db
+scripts/
+Zvits/
